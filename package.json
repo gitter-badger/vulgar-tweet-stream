@@ -1,0 +1,17 @@
+{
+  "name": "twitter_scrape",
+  "version": "0.0.0",
+  "description": "scraper",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "adam veldhousen",
+  "license": "MIT",
+  "dependencies": {
+    "mongodb": "^1.4.8",
+    "twit": "^1.1.18",
+    "redis": "~0.12.1"
+  }
+}
