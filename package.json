@@ -5,13 +5,14 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node src/server.js"
   },
   "author": "adam veldhousen",
   "license": "MIT",
   "dependencies": {
+    "moment": "^2.8.1",
     "mongodb": "^1.4.8",
-    "twit": "^1.1.18",
-    "redis": "~0.12.1"
+    "then-redis": "^0.3.12",
+    "twit": "^1.1.18"
   }
 }
