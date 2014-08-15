@@ -1,1 +1,10 @@
+<<<<<<< HEAD
 node_modules
+=======
+.eunit
+deps
+*.o
+*.beam
+*.plt
+erl_crash.dump
+>>>>>>> 02ab2a31bf608da74dfa041a9540b94913560be9
