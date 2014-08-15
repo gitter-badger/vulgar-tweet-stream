@@ -1,4 +1,5 @@
-var moment = require('moment');
+var moment = require('moment'),
+regexp = require('node-regexp');
 
 exports.Queue = function(flushTarget, limit) {
   var queue = [],
