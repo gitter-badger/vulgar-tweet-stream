@@ -23,7 +23,7 @@ var database = mongo.connect(process.env['MONGOHQ_URL'], function(err, db){
       throw err;
 
     var counter = new lib.Counter(function(input){
-      console.log(input.toString());
+      
     }, data.trim().split('\n'));
 
     stream.on('tweet', function(tweet) {

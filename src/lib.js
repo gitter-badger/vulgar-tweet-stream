@@ -51,24 +51,24 @@ exports.Tweet = function(tweet){
 
 exports.Dictionary = function(phrases){
   this.parse = function(text){
+    var value = undefined;
     phrases.forEach(function(phrase){
       var regex = ".*\s?(" + phrase + ")\s+";
       if (text.match(regex)) {
-        console.info("found an insult using ", phrase, " in ", text);
-        return phrase;
+        console.info("-- insult using ", phrase, " in ", text);
+        value = phrase;
       }
     });
+    return value;
   };
 };
 
 exports.Counter = function(saveFunction, phrases, data){
-  console.info(phrases);
   var dictionary = new exports.Dictionary(phrases.map(function(item) { return item.toLowerCase(); }));
   this.counters = data || {};
   this.increment = function(tweet){
     var phrase = dictionary.parse(tweet.content.text);
     if (phrase) {
-      console.info('found an insult!');
       this.counters[phrase] += 1;
       tweet.phrase_id = phrase;
       saveFunction(tweet);
