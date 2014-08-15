@@ -52,15 +52,16 @@ exports.Tweet = function(tweet){
 
 exports.Dictionary = function(phrases){
   this.parse = function(text){
-    var value = undefined;
+    var tags = [],
+    lower = text.toLowerCase();
+
     phrases.forEach(function(phrase){
-      var regex = ".*\s?(" + phrase + ")\s+";
-      if (text.match(regex)) {
-        console.info("-- insult using ", phrase, " in ", text);
-        value = phrase;
+      if (lower.match("\s?(" + phrase + ")s?\s+"))  {
+        tags.push(phrase);
       }
     });
-    return value;
+
+    return tags.length > 0 ? tags : undefined;
   };
 };
 
@@ -68,10 +69,11 @@ exports.Counter = function(saveFunction, phrases, data){
   var dictionary = new exports.Dictionary(phrases.map(function(item) { return item.toLowerCase(); }));
   this.counters = data || {};
   this.increment = function(tweet){
-    var phrase = dictionary.parse(tweet.content.text);
-    if (phrase) {
-      this.counters[phrase] += 1;
-      tweet.phrase_id = phrase;
+    var insults = dictionary.parse(tweet.content.text);
+    if (insults) {
+      console.info("-- ", insults.length, " insult(s) using ", "[", insults.join(', '), "]", " in ", tweet.content.text);
+      // foreach tag, increment their respective counter by one
+      tweet.insult_tags = insults;
       saveFunction(tweet);
     }
   };

@@ -16,14 +16,14 @@ var database = mongo.connect(process.env['MONGOHQ_URL'], function(err, db){
   redisClient = redis.createClient(process.env['REDISCLOUD_URL']),
   counterStore = db.collection('counter'),
   tweetDumpStore = db.collection('tweetdump'),
-  stream = twitter.stream('statuses/sample', {lang: 'en'});
+  stream = twitter.stream('statuses/sample');
 
   fs.readFile('src/word_dictionary.txt', 'ascii', function(err, data) {
     if (err) 
       throw err;
 
     var counter = new lib.Counter(function(input){
-      
+      // write to db and redis here
     }, data.trim().split('\n'));
 
     stream.on('tweet', function(tweet) {
