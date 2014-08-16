@@ -24,14 +24,15 @@ var database = mongo.connect(process.env['MONGOHQ_URL'], function(err, db){
 
 		counterStore.find({ $name: "vulgar_words_counter" }, function(err, counterModel){
 
-			var queue = new lib.Queue(function(payload){
-				tweetDumpStore.insert(payload, {w: 1}, function(err) { if (err) throw err; });
-			}),
-			counter = new lib.Counter("vulgar_words_counter", function( counterModel, input){
+			var counter = new lib.Counter("vulgar_words_counter", function( counterModel, input){
 				// write to db and redis here
 				queue.add(input);
 				redisDb.publish('counter-update', JSON.stringify(counterModel));
-			}, data.trim().split('\n'));
+			}, data.trim().split('\n')),
+			queue = new lib.Queue(function(payload){
+				tweetDumpStore.insert(payload, {w: 1}, function(err) { if (err) throw err; });
+				counterStore.save(counter, {w:1}, function(err) { if (err) throw err; });
+			});
 
 			stream.on('tweet', function(tweet) {
 				var tweetInfo = new lib.Tweet(tweet);
