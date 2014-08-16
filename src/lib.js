@@ -66,12 +66,14 @@ exports.Dictionary = function(phrases){
 };
 
 exports.Counter = function(runName, saveFunction, phrases, data){
+	console.info(runName);
   var dictionary = new exports.Dictionary(phrases.map(function(item) { return item.toLowerCase(); })),
 	init = function (){ 
-		var obj = {$name: runName};
+		console.info("making new counter obj");
+		var obj = {name: runName};
 		dictionary.phrases.forEach(function(insult) { obj[insult] = 0; }); 
 		return obj;
-	}, counters = data || init();
+	}, counters = data ? data : init();
 
   this.increment = function(tweet){
     var insults = dictionary.parse(tweet.content.text);

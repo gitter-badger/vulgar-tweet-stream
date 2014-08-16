@@ -1,1 +1,1 @@
-worker: supervisor src/server.js
+worker: supervisor src/app.js
