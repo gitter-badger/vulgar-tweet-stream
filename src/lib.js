@@ -52,11 +52,10 @@ exports.Tweet = function(tweet){
 
 exports.Dictionary = function(phrases){
   this.parse = function(text){
-    var tags = [],
-    lower = text.toLowerCase();
+    var tags = [];
 
     phrases.forEach(function(phrase){
-      if (lower.match("\s?(" + phrase + ")s?\s+"))  {
+      if (regexp().find("\\s" + phrase + "s?\\s").global().ignoreCase().toRegExp().test(text))  {
         tags.push(phrase);
       }
     });
@@ -71,7 +70,7 @@ exports.Counter = function(saveFunction, phrases, data){
   this.increment = function(tweet){
     var insults = dictionary.parse(tweet.content.text);
     if (insults) {
-      console.info("-- ", insults.length, " insult(s) using ", "[", insults.join(', '), "]", " in ", tweet.content.text);
+      console.info("--", insults.length, " insult(s) using ", "[", insults.join(', '), "]", " in ", tweet.content.text);
       // foreach tag, increment their respective counter by one
       tweet.insult_tags = insults;
       saveFunction(tweet);

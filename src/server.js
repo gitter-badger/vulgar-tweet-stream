@@ -16,7 +16,7 @@ var database = mongo.connect(process.env['MONGOHQ_URL'], function(err, db){
   redisClient = redis.createClient(process.env['REDISCLOUD_URL']),
   counterStore = db.collection('counter'),
   tweetDumpStore = db.collection('tweetdump'),
-  stream = twitter.stream('statuses/sample');
+  stream = twitter.stream('statuses/filter', {track: 'they,them,those,girl'});
 
   fs.readFile('src/word_dictionary.txt', 'ascii', function(err, data) {
     if (err) 
