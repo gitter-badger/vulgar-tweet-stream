@@ -13,7 +13,7 @@ var database = mongo.connect(process.env['MONGOHQ_URL'], function(err, db){
     access_token: process.env['access_token'], 
     access_token_secret: process.env['access_token_secret'] 
   }),
-  redisClient = redis.createClient(process.env['REDISCLOUD_URL']),
+  redisDb = redis.createClient(process.env['REDISCLOUD_URL']),
   counterStore = db.collection('counter'),
   tweetDumpStore = db.collection('tweetdump'),
   stream = twitter.stream('statuses/filter', {track: 'they,them,those,girl'});
@@ -22,14 +22,30 @@ var database = mongo.connect(process.env['MONGOHQ_URL'], function(err, db){
     if (err) 
       throw err;
 
-    var counter = new lib.Counter(function(input){
-      // write to db and redis here
-    }, data.trim().split('\n'));
+		counterStore.find({ $name: "vulgar_words_counter" }, function(err, counterModel){
 
-    stream.on('tweet', function(tweet) {
-      var tweetInfo = new lib.Tweet(tweet);
-      counter.increment(tweetInfo);
-    });
+
+		
+			redis.createClient(process.env['REDISCLOUD_URL'])
+					 .on("message", function(channel, message) { console.info("REDIS - ", JSON.parse(message)); })
+					 .subscribe('counter-update');
+
+			var queue = new lib.Queue(function(payload){
+				tweetDumpStore.insert(payload, {w: 1}, function(err) { if (err) throw err; });
+			}),
+			counter = new lib.Counter("vulgar_words_counter", function( counterModel, input){
+				// write to db and redis here
+				queue.add(input);
+				redisDb.publish('counter-update', JSON.stringify(counterModel));
+			}, data.trim().split('\n'));
+
+			
+
+			stream.on('tweet', function(tweet) {
+				var tweetInfo = new lib.Tweet(tweet);
+				counter.increment(tweetInfo);
+			});
+		});
 
   });
 });
