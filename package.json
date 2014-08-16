@@ -1,5 +1,5 @@
 {
-  "name": "vulgar tweet machine",
+  "name": "vulgar_tweet_machine",
   "version": "0.0.1",
   "description": "streams vulgar tweets to a dashboard, showing the most often used fowl mouthed phrases",
   "dependencies": {
