@@ -12,7 +12,6 @@ function runName() {
 exports.start = function(){
   var database = mongo.connect(process.env['MONGOHQ_URL'], function(err, db){
     if (err) throw err;
-    exports.database = db;
 
     var twitter = new Twit({
       consumer_key: process.env['consumer_key'], 
@@ -23,31 +22,23 @@ exports.start = function(){
     redisDb = redis.createClient(process.env['REDISCLOUD_URL']),
     counterStore = db.collection('counter'),
     tweetDumpStore = db.collection('tweetdump' + (process.env['environment'] ? '' : '_debug')),
-    stream = twitter.stream('statuses/filter', {track: 'they,them,those,girl'});
-
-    exports.redis = redisDb;
+    stream = twitter.stream('statuses/filter', {track: 'they,them,those,girl,bro'});
 
     fs.readFile('./src/word_dictionary.txt', 'ascii', function(err, data) {
       if (err) 
         throw err;
 
       counterStore.findOne({ name: runName() }, function(err, counterModel){
-
-        if (err) {
-          console.info(err);
-          throw err;
-        }
-
+        if (err) { throw err; }
         var counter = new lib.Counter(runName(), function(updatedCounter, input){
           queue.add(input);
-          counterStore.save(updatedCounter, {w:1}, function(err) { if (err) throw err; });
           redisDb.publish('counter-update', JSON.stringify(updatedCounter));
+          counterStore.save(updatedCounter, {w:1}, function(err) { if (err) throw err; });
         }, data.trim().split('\n'), counterModel.name ? counterModel : undefined),
         queue = new lib.Queue(function(payload){
           tweetDumpStore.insert(payload, {w: 1}, function(err) { if (err) throw err; });
         });
 
-        console.info('starting scrape');
         stream.on('tweet', function(tweet) {
           var tweetInfo = new lib.Tweet(tweet);
           counter.increment(tweetInfo);
