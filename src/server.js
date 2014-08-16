@@ -24,12 +24,6 @@ var database = mongo.connect(process.env['MONGOHQ_URL'], function(err, db){
 
 		counterStore.find({ $name: "vulgar_words_counter" }, function(err, counterModel){
 
-
-		
-			redis.createClient(process.env['REDISCLOUD_URL'])
-					 .on("message", function(channel, message) { console.info("REDIS - ", JSON.parse(message)); })
-					 .subscribe('counter-update');
-
 			var queue = new lib.Queue(function(payload){
 				tweetDumpStore.insert(payload, {w: 1}, function(err) { if (err) throw err; });
 			}),
@@ -38,8 +32,6 @@ var database = mongo.connect(process.env['MONGOHQ_URL'], function(err, db){
 				queue.add(input);
 				redisDb.publish('counter-update', JSON.stringify(counterModel));
 			}, data.trim().split('\n'));
-
-			
 
 			stream.on('tweet', function(tweet) {
 				var tweetInfo = new lib.Tweet(tweet);
