@@ -24,7 +24,8 @@ exports.Tweet = function(tweet){
 
   this.user = { 
     name: tweet.user.name, 
-    username: tweet.user.screen_name
+    username: tweet.user.screen_name,
+    location: tweet.user.location
    };
 
   this.location = { 
@@ -33,53 +34,52 @@ exports.Tweet = function(tweet){
     place: tweet.place
   };
 
-  this.source = tweet.source
+  if (tweet.source && tweet.source != null ) {
+    var sourceDevice = regexp().find("Twitter for (\\w+)").ignoreCase().toRegExp().exec(tweet.source);
+    if (sourceDevice != null) 
+      this.source = sourceDevice[2];
+  }
+  else {
+    this.source = "unknown";
+  }
 
-  this.content = {
-    text: tweet.text,
-    favorites: tweet.favorite_count,
-    retweets: tweet.retweet_count
-  };
+  this.content = tweet.text;
 
   this.created = function(){ 
     return moment(this.time);
   };
 
   this.toString = function(){
-    return this.user.name + ": " + this.content.text;
+    return this.user.name + ": " + this.content;
   };
 };
 
-exports.Dictionary = function(phrases){
-	this.phrases = phrases;
+exports.Counter = function(runName, saveFunction, phrases, data){
+  var lut = phrases.map(function(item) { return item.toLowerCase(); }),
+  counters = data ? data : {name: runName};
+
   this.parse = function(text){
     var tags = [];
 
-    phrases.forEach(function(phrase){
-      if (regexp().find("\\s" + phrase + "s?\\s").global().ignoreCase().toRegExp().test(text))  {
+    lut.forEach(function(phrase){
+      if (regexp().find("\\s" + phrase + "(s?[es]?)\\s").global().ignoreCase().toRegExp().test(text)) {
         tags.push(phrase);
       }
     });
 
     return tags.length > 0 ? tags : undefined;
   };
-};
-
-exports.Counter = function(runName, saveFunction, phrases, data){
-	console.info(runName);
-  var dictionary = new exports.Dictionary(phrases.map(function(item) { return item.toLowerCase(); })),
-	init = function (){ 
-		console.info("making new counter obj");
-		var obj = {name: runName};
-		dictionary.phrases.forEach(function(insult) { obj[insult] = 0; }); 
-		return obj;
-	}, counters = data ? data : init();
 
   this.increment = function(tweet){
-    var insults = dictionary.parse(tweet.content.text);
+    var insults = this.parse(tweet.content);
     if (insults) {
-      insults.forEach(function(insult){ counters[insult] += 1; });
-      console.info("INSULT - ", insults.length, " insult(s) using ", "[", insults.join(', '), "]", " in ", tweet.content.text);
+      insults.forEach(function(insult){ 
+        if (!counters[insult] || counters[insult] == null)
+           counters[insult] = 1;
+        else
+          counters[insult] += 1;
+      });
+      console.info("INSULT - ", insults.length, " insult(s) using ", "[", insults.join(', '), "]", " in ", tweet.content);
       tweet.insult_tags = insults;
       saveFunction(counters, tweet);
     }

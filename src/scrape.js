@@ -22,14 +22,13 @@ exports.start = function(){
     redisDb = redis.createClient(process.env['REDISCLOUD_URL']),
     counterStore = db.collection('counter'),
     tweetDumpStore = db.collection('tweetdump' + (process.env['environment'] ? '' : '_debug')),
-    stream = twitter.stream('statuses/filter', {track: 'they,them,those,girl,bro'});
+    stream = twitter.stream('statuses/filter', {track: 'the,girl,she,he,they,a,e,i,o,u,y'});
 
     fs.readFile('./src/word_dictionary.txt', 'ascii', function(err, data) {
-      if (err) 
-        throw err;
+      if (err) throw err;
 
       counterStore.findOne({ name: runName() }, function(err, counterModel){
-        if (err) { throw err; }
+        if (err) throw err;
         var counter = new lib.Counter(runName(), function(updatedCounter, input){
           queue.add(input);
           redisDb.publish('counter-update', JSON.stringify(updatedCounter));
