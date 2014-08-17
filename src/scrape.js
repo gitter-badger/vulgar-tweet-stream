@@ -22,7 +22,7 @@ exports.start = function(){
     redisDb = redis.createClient(process.env['REDISCLOUD_URL']),
     counterStore = db.collection('counter'),
     tweetDumpStore = db.collection('tweetdump' + (process.env['environment'] ? '' : '_debug')),
-    stream = twitter.stream('statuses/filter', {track: 'the,girl,she,he,they,a,e,i,o,u,y'});
+    stream = twitter.stream('statuses/filter', {track: 'I,you,me,him,us,they,the,girl,she,he,they,a,e,i,o,u,y'});
 
     fs.readFile('./src/word_dictionary.txt', 'ascii', function(err, data) {
       if (err) throw err;
