@@ -23,20 +23,25 @@ module.exports = function(callback) {
       }),
       interactionContext = {
         counter: {
-          processedTweet: function() { counterModel.all_time += 1; },
+          processedTweet: function() { 
+            var redisKey = process.env['environment'] === 'production' ? 'all_time' : 'all_time_dev';
+            counterModel.all_time += 1; 
+            redisDb.set(redisKey, counterModel.all_time);
+          },
           put: function(key, value){
+            var redisKey = process.env['environment'] === 'production' ? key : key + '_dev';
             if (key) 
             {
               // update counter model to new value 
               if (value || counterModel.model[key] === undefined) { 
                 value = value || 0;
                 counterModel.model[key] = value;
-                redisDb.set(key, value);
+                redisDb.set(redisKey, value);
               }
               // add 1 to the existing value
               else {
                 counterModel.model[key] += 1;
-                redisDb.incrby(key, 1);
+                redisDb.set(redisKey, counterModel.model[key]);
               }
               redisDb.publish('update', JSON.stringify({ key:key, value:counterModel.model[key] }));
               counterQueue.add(0);
