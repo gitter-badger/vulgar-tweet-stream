@@ -23,6 +23,7 @@ module.exports = function(callback) {
       }),
       interactionContext = {
         counter: {
+          processedTweet: function() { counterModel.all_time += 1; },
           put: function(key, value){
             if (key) 
             {
@@ -63,6 +64,7 @@ module.exports = function(callback) {
           var terms = data.trim().toLowerCase().split('\n');
           counterModel = { 
             name: counterName, 
+            all_time: 0,
             model: terms.reduce(function(acc, item) { 
               acc[item] = 0; 
               return acc; 

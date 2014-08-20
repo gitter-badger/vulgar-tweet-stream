@@ -15,6 +15,7 @@ serviceProvider(function(interactionContext){
 
     stream.on('tweet', function(tweet) {
       var results = parser.parseTweet(tweet);
+      interactionContext.counter.processedTweet();
       if (results.match) {
         var tweetInfo = new models.Tweet(tweet, results.insults);
         console.info('MATCH - ', results.insults, ' in ', tweetInfo.content);
