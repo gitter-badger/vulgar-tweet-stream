@@ -6,7 +6,7 @@ module.exports = function(callback) {
   REDIS = process.env['REDISCLOUD_URL'],
   MONGO = process.env['MONGOHQ_URL'],
   counterName = process.env['environment'] === 'production' ? 'live_counter' : 'dev_counter,'
-  TWEETDUMP = process.env['environment'] === 'production' ? 'tweetdump' : 'tweetdump_dev';
+  TWEETDUMP = process.env['environment'] === 'production' ? 'tweetdump_live' : 'tweetdump_dev';
 
   var mongoDb = mongo.connect(MONGO, function(err, db){
     if (err) throw err;
