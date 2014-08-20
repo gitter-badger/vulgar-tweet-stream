@@ -41,7 +41,7 @@ module.exports = function(callback) {
               // add 1 to the existing value
               else {
                 counterModel.model[key] += 1;
-                redisDb.set(redisKey, counterModel.model[key]);
+                redisDb.incrby(redisKey);
               }
               redisDb.publish('update', JSON.stringify({ key:key, value:counterModel.model[key] }));
               counterQueue.add(0);
