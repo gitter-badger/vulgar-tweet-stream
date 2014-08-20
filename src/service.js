@@ -3,6 +3,7 @@ module.exports = function(callback) {
   var redis = require('then-redis'),
   mongo = require('mongodb').MongoClient,
   fs = require('fs'),
+  production = process.env['environment'] === 'production',
   REDIS = process.env['REDISCLOUD_URL'],
   MONGO = process.env['MONGOHQ_URL'],
   counterName = process.env['environment'] === 'production' ? 'live_counter' : 'dev_counter,'
@@ -15,21 +16,21 @@ module.exports = function(callback) {
     counterCollection = db.collection('counter'),
     tweetDump = db.collection(TWEETDUMP);
     execute = function (callback, counterModel){
-      var queue = new Queue(64, function(tweets){
+      var tweetBatch = new Batcher(256, function(tweets){
        tweetDump.insert(tweets, {w:0}, function(err) { if(err) throw err; }); 
       }),
-      counterQueue = new Queue(256, function(){
+      counterBatch = new Batcher(64, function(){
         counterCollection.save(counterModel, {w:0}, function(err){ if (err) throw err; });
       }),
       interactionContext = {
         counter: {
           processedTweet: function() { 
-            var redisKey = process.env['environment'] === 'production' ? 'all_time' : 'all_time_dev';
+            var redisKey = production ? 'all_time' : 'all_time_dev';
             counterModel.all_time += 1; 
             redisDb.set(redisKey, counterModel.all_time);
           },
           put: function(key, value){
-            var redisKey = process.env['environment'] === 'production' ? key : key + '_dev';
+            var redisKey = production ? key : key + '_dev';
             if (key) 
             {
               // update counter model to new value 
@@ -44,7 +45,7 @@ module.exports = function(callback) {
                 redisDb.incrby(redisKey);
               }
               redisDb.publish('update', JSON.stringify({ key:key, value:counterModel.model[key] }));
-              counterQueue.add(0);
+              counterBatch.add(0);
             }
           },
           get: function(key) { 
@@ -56,7 +57,7 @@ module.exports = function(callback) {
             return keys; 
           }
         },
-        persistTweet: function(tweet) { queue.add(tweet); }
+        persistTweet: function(tweet) { tweetBatch.add(tweet); }
       };
       callback(interactionContext);
     };
@@ -85,18 +86,17 @@ module.exports = function(callback) {
 };
 
 
-var Queue = function(limit, callback) {
-  var queue = [],
-  queueSize = limit || 96;
+var Batcher = function(limit, callback) {
+  var batch = [],
+  batchSize = limit || 96;
 
   this.flush = function(){
-    console.log("Flushing ", limit, " items..");
-    callback(queue);
-    queue = [];
+    callback(batch);
+    batch = [];
   };
   this.add = function(item) {
-    queue.push(item);
-    if (queue.length >= queueSize)
+    batch.push(item);
+    if (batch.length >= batchSize)
       this.flush();
   };
 
