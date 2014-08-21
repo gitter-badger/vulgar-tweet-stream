@@ -57,7 +57,8 @@ module.exports = function(callback) {
             return keys; 
           }
         },
-        persistTweet: function(tweet) { tweetBatch.add(tweet); }
+        persistTweet: function(tweet) { tweetBatch.add(tweet); },
+        env: { production: production }
       };
       callback(interactionContext);
     };

@@ -3,17 +3,9 @@
   "version": "0.0.1",
   "description": "streams vulgar tweets to a dashboard, showing the most often used fowl mouthed phrases",
   "dependencies": {
-    "consolidate": "0.10.0",
-    "express": "3.4.7",
-    "jade": "0.35.0",
-    "moment": "^2.8.1",
     "mongodb": "^1.4.8",
     "node-regexp": "^0.1.1",
     "then-redis": "^0.3.12",
     "twit": "^1.1.18"
   },
-  "devDependencies": {
-    "mimosa-less": "*",
-    "mimosa-jade": "*"
-  }
 }
