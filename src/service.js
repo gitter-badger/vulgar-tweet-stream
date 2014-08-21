@@ -17,11 +17,11 @@ module.exports = function(callback) {
     tweetDump = db.collection(TWEETDUMP);
     execute = function (callback, counterModel){
       var tweetBatch = new Batcher(256, function(tweets){
-       if (production) console.info('writing 256 tweets to ', TWEETDUMP);
+       if (production) console.info('DB - Writing 256 tweets to', TWEETDUMP);
        tweetDump.insert(tweets, {w:0}, function(err) { if(err) throw err; }); 
       }),
       counterBatch = new Batcher(64, function(){
-        if (production) console.info('Updating ', counterName);
+        if (production) console.info('DB - Updating', counterName);
         counterCollection.save(counterModel, {w:0}, function(err){ if (err) throw err; });
       }),
       interactionContext = {
