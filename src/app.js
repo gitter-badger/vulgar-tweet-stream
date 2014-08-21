@@ -13,12 +13,13 @@ serviceProvider(function(interactionContext){
     }),
     stream = twitter.stream('statuses/filter', {track: 'I,you,me,him,us,they,the,girl,she,he,they'});
 
+    console.info('Starting tweet stream...');
     stream.on('tweet', function(tweet) {
       var results = parser.parseTweet(tweet);
       interactionContext.counter.processedTweet();
       if (results.match) {
         var tweetInfo = new models.Tweet(tweet, results.insults);
-        if (!interactionContext.env.production || results.insults.length > 2)
+        if (results.insults.length > 3)
           console.info('MATCH -', results.insults, 'in', tweetInfo.content);
         results.insults.forEach(function(term){ interactionContext.counter.put(term); });
         interactionContext.persistTweet(tweetInfo);
