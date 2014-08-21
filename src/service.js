@@ -6,8 +6,8 @@ module.exports = function(callback) {
   production = process.env['environment'] === 'production',
   REDIS = process.env['REDISCLOUD_URL'],
   MONGO = process.env['MONGOHQ_URL'],
-  counterName = process.env['environment'] === 'production' ? 'live_counter' : 'dev_counter,'
-  TWEETDUMP = process.env['environment'] === 'production' ? 'tweetdump_live' : 'tweetdump_dev';
+  counterName = production ? 'live_counter' : 'dev_counter,'
+  TWEETDUMP = production ? 'tweetdump_live' : 'tweetdump_dev';
 
   var mongoDb = mongo.connect(MONGO, function(err, db){
     if (err) throw err;
@@ -17,9 +17,11 @@ module.exports = function(callback) {
     tweetDump = db.collection(TWEETDUMP);
     execute = function (callback, counterModel){
       var tweetBatch = new Batcher(256, function(tweets){
+       if (production) console.info('writing 256 tweets to ', TWEETDUMP);
        tweetDump.insert(tweets, {w:0}, function(err) { if(err) throw err; }); 
       }),
       counterBatch = new Batcher(64, function(){
+        if (production) console.info('Updating ', counterName);
         counterCollection.save(counterModel, {w:0}, function(err){ if (err) throw err; });
       }),
       interactionContext = {
