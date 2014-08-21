@@ -18,7 +18,7 @@ serviceProvider(function(interactionContext){
       interactionContext.counter.processedTweet();
       if (results.match) {
         var tweetInfo = new models.Tweet(tweet, results.insults);
-        if (!interactionContext.env.production || results.insults.length > 1)
+        if (!interactionContext.env.production || results.insults.length > 2)
           console.info('MATCH -', results.insults, 'in', tweetInfo.content);
         results.insults.forEach(function(term){ interactionContext.counter.put(term); });
         interactionContext.persistTweet(tweetInfo);
