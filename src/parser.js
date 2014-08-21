@@ -3,7 +3,7 @@ var regexp = require('node-regexp');
 module.exports = function(context) { 
   var lut = context.counter.phrases();
   function buildRegex(term) { 
-    return regexp().find("[\\s](" + term + ")[es]?[\\s]?").global().ignoreCase().toRegExp();
+    return regexp().find("[\\s](" + term + ")[\\.es]{0,2}").global().ignoreCase().toRegExp();
   };
 
   return {
