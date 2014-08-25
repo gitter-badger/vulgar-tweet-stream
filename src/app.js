@@ -22,7 +22,7 @@ serviceProvider(function(interactionContext){
         if (results.insults.length > 3)
           console.info('MATCH -', results.insults, 'in', tweetInfo.content);
         results.insults.forEach(function(term){ interactionContext.counter.put(term); });
-        interactionContext.persistTweet(tweetInfo);
+        //interactionContext.persistTweet(tweetInfo);
       }
     });
 });
