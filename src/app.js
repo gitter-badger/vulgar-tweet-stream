@@ -1,4 +1,6 @@
-var serviceProvider = require('./service');
+
+var serviceProvider = require('./service'),
+timer = require('./timer')();
 
 serviceProvider(function(interactionContext){
     var Twit = require('twit'),
@@ -13,10 +15,12 @@ serviceProvider(function(interactionContext){
     }),
     stream = twitter.stream('statuses/filter', {track: 'I,you,me,him,us,they,the,girl,she,he,they'});
 
+    //timer.timer(function(tps) { console.info("Tweets Per Second:", tps); });
     console.info('Starting tweet stream...');
     stream.on('tweet', function(tweet) {
       var results = parser.parseTweet(tweet);
       interactionContext.counter.processedTweet();
+      //timer.increment();
       if (results.match) {
         var tweetInfo = new models.Tweet(tweet, results.insults);
         if (results.insults.length > 3)
