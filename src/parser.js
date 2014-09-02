@@ -1,21 +1,15 @@
 var regexp = require('node-regexp');
 
-module.exports = function(context) { 
-  var lut = context.counter.phrases();
-
+exports.parseTweet = function(phrases, tweet){
+  var content = tweet.text,
+  matchedInsults = phrases.filter(function(insult){ 
+    var regex = buildRegex(insult);
+    return regex.test(content); 
+  });
   return {
-    parseTweet: function(tweet){
-      var content = tweet.text,
-      matchedInsults = lut.filter(function(insult){ 
-        var regex = buildRegex(insult);
-        return regex.test(content); 
-      });
-      return {
-        match: matchedInsults.length > 0,
-        insults: matchedInsults,
-        tweet: tweet
-      };
-    }
+    match: matchedInsults.length > 0,
+    insults: matchedInsults,
+    tweet: tweet
   };
 };
 

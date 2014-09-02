@@ -1,6 +1,7 @@
 var timer = require('./timer')(),
     models = require('./models'),
-    serviceProvider = require('./service');
+    serviceProvider = require('./service'),
+    parser = require('./parser');
 
 // Twitter Setup
 var Twit = require('twit'),
@@ -10,28 +11,25 @@ var Twit = require('twit'),
       access_token: process.env['access_token'], 
       access_token_secret: process.env['access_token_secret'] 
     }),
-    stream = twitter.stream('statuses/filter', {track: 'I,you,me,him,us,they,the,girl,she,he,they'});
+    stream = twitter.stream('statuses/filter', {track: 'I,you,me,him,us,they,the,girl,she,he,they', language: 'en'});
 
 // Mongo and Redis setup
 var mongo = require('mongodb').MongoClient,
     redis = require('then-redis'),
     rdb = redis.createClient(process.env['REDISCLOUD_URL']);
 
-// This is weird because the mongodb client you are using doesn't allow you to 
-// just pass around the db object. Look at the mongoose and monk modules. They
-// do this a bit differently.
+// connnect to mongo and process tweets
 mongo.connect(process.env['MONGOHQ_URL'], function (err, mdb){
   serviceProvider(mdb, rdb, function(interactionContext){
-    var parser = require('./parser')(interactionContext);
     //timer.timer(function(tps) { console.info("Tweets Per Second:", tps); });
     console.info('Starting tweet stream...');
     stream.on('tweet', function(tweet) {
-      var results = parser.parseTweet(tweet);
+      var results = parser.parseTweet(interactionContext.counter.phrases(), tweet);
       interactionContext.counter.processedTweet();
       //timer.increment();
       if (results.match) {
         var tweetInfo = new models.Tweet(tweet, results.insults);
-        if (results.insults.length > 3)
+        if (results.insults.length > 1)
           console.info('MATCH -', results.insults, 'in', tweetInfo.content, tweetInfo.tweetLink);
         results.insults.forEach(function(term){ interactionContext.counter.put(term); });
         //interactionContext.persistTweet(tweetInfo);
