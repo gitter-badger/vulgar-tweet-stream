@@ -2,9 +2,6 @@ var regexp = require('node-regexp');
 
 module.exports = function(context) { 
   var lut = context.counter.phrases();
-  function buildRegex(term) { 
-    return regexp().find("(" + term + ")(?:[\\b\\ss]|es|ing|in|ed){1}").global().ignoreCase().toRegExp();
-  };
 
   return {
     parseTweet: function(tweet){
@@ -20,4 +17,8 @@ module.exports = function(context) {
       };
     }
   };
+};
+
+function buildRegex(term) { 
+  return regexp().find("(" + term + ")(?:[\\b\\ss]|es|ing|in|ed){1}").global().ignoreCase().toRegExp();
 };

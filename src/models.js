@@ -20,6 +20,7 @@ exports.Tweet = function(tweet, matchedTerms){
 
   this.content = tweet.text.trim();
   this.matchedTerms = matchedTerms;
+  this.tweetLink = "http://twitter.com/" + tweet.user.screen_name +"/status/"+ tweet.id_str;
 
   this.toString = function(){
     return this.user.name + ": " + this.content;
