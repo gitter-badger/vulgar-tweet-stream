@@ -11,7 +11,7 @@ module.exports = function(mdb, rdb, callback) {
     counterCollection.findOne({ name: counterName }, function(error, counterModel){
       if (error) throw error;
       if (!counterModel) {
-        console.info('reading in words_dictionary to bootstrap counters..');
+        console.log('reading in words_dictionary to bootstrap counters..');
         fs.readFile('./src/word_dictionary.txt', 'ascii', function(err, data) {
           var terms = data.trim().toLowerCase().split('\n');
           counterModel = { 
