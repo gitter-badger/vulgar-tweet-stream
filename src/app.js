@@ -2,7 +2,7 @@ var timer = require('./timer')(),
     models = require('./models'),
     serviceProvider = require('./service'),
     parser = require('./parser'),
-    logLevel = process.env['NODE_ENV'] === 'production' ? 3 : 2;
+    logLevel = process.env['environment'] === 'production' ? 3 : 2;
 
 // Twitter Setup
 var Twit = require('twit'),
