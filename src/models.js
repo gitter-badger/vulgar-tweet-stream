@@ -1,9 +1,8 @@
 var regexp = require('node-regexp');
 
 exports.Tweet = function(tweet, matchedTerms){
-  this.time = new Date(tweet.created_at);
   this.tweetId = tweet.id_str;
-  this.username = tweet.user.screen_name.trim();
+  this.matchedTerms = matchedTerms;
 
   if(tweet.place || tweet.coordinates)
     this.tweet_location = { 
@@ -16,11 +15,11 @@ exports.Tweet = function(tweet, matchedTerms){
     var sourceDevice = regexp().find("Twitter for (\\w+)").ignoreCase().toRegExp().exec(tweet.source);
     if (sourceDevice != null) this.source = sourceDevice[2];
   }
-  else { this.source = "unknown"; }
 
-  this.content = tweet.text.trim();
-  this.matchedTerms = matchedTerms;
-  this.tweetLink = "http://twitter.com/" + tweet.user.screen_name +"/status/"+ tweet.id_str;
+  this.getTime = function() { return new Date(tweet.created_at); };
+  this.getContent = function() { return tweet.text.trim(); };
+  this.getUsername = function() { return tweet.user.screen_name.trim(); };
+  this.getTweetLink = function() { return "http://twitter.com/" + tweet.user.screen_name +"/status/"+ tweet.id_str; };
 
   this.toString = function(){
     return this.user.name + ": " + this.content;

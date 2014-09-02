@@ -31,9 +31,9 @@ mongo.connect(process.env['MONGOHQ_URL'], function (err, mdb){
       if (results.match) {
         var tweetInfo = new models.Tweet(tweet, results.insults);
         if (results.insults.length > logLevel)
-          console.log('MATCH -', results.insults, 'in', tweetInfo.content, tweetInfo.tweetLink);
+          console.log('MATCH -', results.insults, 'in', tweetInfo.getContent(), tweetInfo.getTweetLink());
         results.insults.forEach(function(term){ interactionContext.counter.put(term); });
-        //interactionContext.persistTweet(tweetInfo);
+        interactionContext.persistTweet(tweetInfo);
       }
     });
   });
