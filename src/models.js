@@ -3,6 +3,7 @@ var regexp = require('node-regexp');
 exports.Tweet = function(tweet, matchedTerms){
   this.tweetId = tweet.id_str;
   this.matchedTerms = matchedTerms;
+  this.username = tweet.user.screen_name;
 
   if(tweet.place || tweet.coordinates)
     this.tweet_location = { 
@@ -18,10 +19,9 @@ exports.Tweet = function(tweet, matchedTerms){
 
   this.getTime = function() { return new Date(tweet.created_at); };
   this.getContent = function() { return tweet.text.trim(); };
-  this.getUsername = function() { return tweet.user.screen_name.trim(); };
   this.getTweetLink = function() { return "http://twitter.com/" + tweet.user.screen_name +"/status/"+ tweet.id_str; };
 
   this.toString = function(){
-    return this.user.name + ": " + this.content;
+    return [this.tweetId,this.username,this.getContent,this.matchedTerms].join(',');
   };
 };
