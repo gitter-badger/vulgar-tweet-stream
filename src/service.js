@@ -1,8 +1,8 @@
 var fs = require('fs'),
-    production = process.env['environment'] === 'production',
-    counterName = production ? 'live_counter' : 'dev_counter,'
-    TWEETDUMP = production ? 'tweetdump_live' : 'tweetdump_dev',
-    redisKey = production ? 'all_time' : 'all_time_dev';
+    config = require('./config'),
+    counterName = config.isProduction ? 'live_counter' : 'dev_counter,'
+    TWEETDUMP = config.isProduction ? 'tweetdump_live' : 'tweetdump_dev',
+    redisKey = config.isProduction ? 'all_time' : 'all_time_dev';
 
 module.exports = function(mdb, rdb, callback) {
     counterCollection = mdb.collection('counter'),
@@ -71,8 +71,7 @@ function execute (counterModel, rdb, callback){
         return keys; 
       }
     },
-    persistTweet: function(tweet) { tweetBatch.add(tweet); },
-    env: { production: production }
+    persistTweet: function(tweet) { tweetBatch.add(tweet); }
   };
   callback(interactionContext);
 };
