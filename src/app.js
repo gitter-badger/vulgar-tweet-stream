@@ -18,7 +18,7 @@ var mongo = require('mongodb').MongoClient,
 mongo.connect(config.mongoUrl, function (err, mdb){
   serviceProvider(mdb, rdb, function(interactionContext){
     //timer.timer(function(tps) { console.log("Tweets Per Second:", tps); });
-    console.log('Starting tweet stream...');
+    console.log('Starting tweet stream in', config.environment, 'mode...');
     stream.on('tweet', function(tweet) {
       var results = parser.parseTweet(interactionContext.counter.phrases(), tweet);
       interactionContext.counter.processedTweet();

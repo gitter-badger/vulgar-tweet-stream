@@ -1,5 +1,5 @@
 var fs = require('fs'),
-    config = require('./config'),
+    config = require('./config').config,
     counterName = config.isProduction ? 'live_counter' : 'dev_counter,'
     TWEETDUMP = config.isProduction ? 'tweetdump_live' : 'tweetdump_dev',
     redisKey = config.isProduction ? 'all_time' : 'all_time_dev';
