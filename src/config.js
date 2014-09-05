@@ -1,7 +1,7 @@
 var environment = process.env['NODE_ENV'] || 'development',
 isProduction = environment === 'production';
 
-module.exports.config = {
+module.exports = {
   environment: environment,
   isProduction: isProduction,
   redisUrl: process.env['REDISCLOUD_URL'],

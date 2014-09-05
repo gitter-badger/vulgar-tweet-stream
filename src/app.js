@@ -2,7 +2,7 @@ var timer = require('./timer')(),
     models = require('./models'),
     serviceProvider = require('./service'),
     parser = require('./parser'),
-    config = require('./config').config;
+    config = require('./config');
 
 // Twitter Setup
 var Twit = require('twit'),
