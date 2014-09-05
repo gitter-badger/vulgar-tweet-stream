@@ -2,7 +2,7 @@ var fs = require('fs'),
     config = require('./config'),
     counterName = config.isProduction ? 'live_counter' : 'dev_counter,'
     TWEETDUMP = config.isProduction ? 'tweetdump_live' : 'tweetdump_dev',
-    redisKey = config.isProduction ? 'all_time' : 'all_time_dev';
+    redisAllTimeKey = config.isProduction ? 'all_time' : 'all_time_dev';
 
 module.exports = function(mdb, rdb, callback) {
     counterCollection = mdb.collection('counter'),
@@ -42,21 +42,24 @@ function execute (counterModel, rdb, callback){
     counter: {
       processedTweet: function() {
         counterModel.all_time += 1; 
-        rdb.set(redisKey, counterModel.all_time);
+        rdb.set(redisAllTimeKey, counterModel.all_time);
       },
       put: function(key, value){
         if (key) 
         {
+          if (!config.isProduction)
+            key = key + "_dev";
+
           // update counter model to new value 
           if (value || counterModel.model[key] === undefined) { 
             value = value || 0;
             counterModel.model[key] = value;
-            rdb.set(redisKey, value);
+            rdb.set(key, value);
           }
           // add 1 to the existing value
           else {
             counterModel.model[key] += 1;
-            rdb.incrby(redisKey);
+            rdb.incr(key);
           }
           rdb.publish('update', JSON.stringify({ key:key, value:counterModel.model[key] }));
           counterBatch.add(0);
