@@ -5,29 +5,46 @@ var fs = require('fs'),
     redisAllTimeKey = config.isProduction ? 'all_time' : 'all_time_dev';
 
 module.exports = function(mdb, rdb, callback) {
-    counterCollection = mdb.collection('counter'),
-    tweetDump = mdb.collection(TWEETDUMP);
+  // These two variables are leaky but it works in our favor
+  counterCollection = mdb.collection('counter'),
+  tweetDump = mdb.collection(TWEETDUMP);
 
-    counterCollection.findOne({ name: counterName }, function(error, counterModel){
-      if (error) throw error;
+  counterCollection.findOne({ name: counterName }, function(error, counterModel){
+    if (error) throw error;
+
+    console.log('reading in words_dictionary to bootstrap counters..');
+    fs.readFile('./src/word_dictionary.txt', 'ascii', function (err, data) {
+      var terms = data.trim().toLowerCase().split('\n');
       if (!counterModel) {
-        console.log('reading in words_dictionary to bootstrap counters..');
-        fs.readFile('./src/word_dictionary.txt', 'ascii', function(err, data) {
-          var terms = data.trim().toLowerCase().split('\n');
-          counterModel = { 
-            name: counterName, 
-            all_time: 0,
-            model: terms.reduce(function(acc, item) { 
-              acc[item] = 0; 
-              return acc; 
-            }, {}) 
-          };
-          execute(counterModel, rdb, callback); 
+        counterModel = {
+          name: counterName,
+          all_time: 0,
+          model: terms.reduce(function(acc, item) {
+            acc[item] = 0;
+            return acc;
+          }, {})
+        };
+      } else if (Object.keys(counterModel.model).length !== terms.length){
+
+        /* this check assumes that words are only added and not removed. When
+         * words are removed it will still trigger this process.
+         * i.e. this process will run every time because some words have been
+         * removed from the production db
+        */
+        console.log('new terms found, adding new terms...')
+        var words = Object.keys(counterModel.model);
+        terms.forEach(function (term) {
+          var wordExists = words.some(function (word) {
+            return word === term;
+          });
+          if (!wordExists) {
+            counterModel.model[term] = 0;
+          }
         });
       }
-      else
-        execute(counterModel, rdb, callback);
-    });
+      execute(counterModel, rdb, callback);
+    })
+  });
 };
 
 
@@ -44,23 +61,17 @@ function execute (counterModel, rdb, callback){
         counterModel.all_time += 1; 
         rdb.set(redisAllTimeKey, counterModel.all_time);
       },
-      put: function(key, value){
+      put: function(key){
         if (key) 
         {
           if (!config.isProduction)
             key = key + "_dev";
 
-          // update counter model to new value 
-          if (value || counterModel.model[key] === undefined) { 
-            value = value || 0;
-            counterModel.model[key] = value;
-            rdb.set(key, value);
-          }
+          // update counter model to new value
           // add 1 to the existing value
-          else {
-            counterModel.model[key] += 1;
-            rdb.incr(key);
-          }
+          counterModel.model[key] += 1;
+          rdb.incr(key);
+
           rdb.publish('update', JSON.stringify({ key:key, value:counterModel.model[key] }));
           counterBatch.add(0);
         }
@@ -69,9 +80,7 @@ function execute (counterModel, rdb, callback){
         return counterModel.model[key]; 
       },
       phrases: function() { 
-        var keys = [];
-        for (key in counterModel.model) keys.push(key);
-        return keys; 
+        return Object.keys(counterModel.model);
       }
     },
     persistTweet: function(tweet) { tweetBatch.add(tweet); }
@@ -92,5 +101,4 @@ var Batcher = function(limit, callback) {
     if (batch.length >= batchSize)
       this.flush();
   };
-
 };
