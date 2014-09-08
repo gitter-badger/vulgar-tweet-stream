@@ -31,7 +31,7 @@ module.exports = function(mdb, rdb, callback) {
          * i.e. this process will run every time because some words have been
          * removed from the production db
         */
-        console.log('new terms found, adding new terms...')
+        console.log('new terms found, adding new terms...');
         var words = Object.keys(counterModel.model);
         terms.forEach(function (term) {
           var wordExists = words.some(function (word) {
@@ -43,14 +43,14 @@ module.exports = function(mdb, rdb, callback) {
         });
       }
       execute(counterModel, rdb, callback);
-    })
+    });
   });
 };
 
 
 function execute (counterModel, rdb, callback){
   var tweetBatch = new Batcher(256, function(tweets){
-   tweetDump.insert(tweets, {w:0}, function(err) { if(err) throw err; }); 
+   tweetDump.insert(tweets, {w:0}, function(err) { if(err) throw err; });
   }),
   counterBatch = new Batcher(64, function(){
     counterCollection.save(counterModel, {w:0}, function(err){ if (err) throw err; });
@@ -58,11 +58,11 @@ function execute (counterModel, rdb, callback){
   interactionContext = {
     counter: {
       processedTweet: function() {
-        counterModel.all_time += 1; 
+        counterModel.all_time += 1;
         rdb.set(redisAllTimeKey, counterModel.all_time);
       },
       put: function(key){
-        if (key) 
+        if (key)
         {
           if (!config.isProduction)
             key = key + "_dev";
@@ -76,17 +76,17 @@ function execute (counterModel, rdb, callback){
           counterBatch.add(0);
         }
       },
-      get: function(key) { 
-        return counterModel.model[key]; 
+      get: function(key) {
+        return counterModel.model[key];
       },
-      phrases: function() { 
+      phrases: function() {
         return Object.keys(counterModel.model);
       }
     },
     persistTweet: function(tweet) { tweetBatch.add(tweet); }
   };
   callback(interactionContext);
-};
+}
 
 var Batcher = function(limit, callback) {
   var batch = [],

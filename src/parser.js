@@ -2,9 +2,9 @@ var regexp = require('node-regexp');
 
 exports.parseTweet = function(phrases, tweet){
   var content = tweet.text,
-  matchedInsults = phrases.filter(function(insult){ 
+  matchedInsults = phrases.filter(function(insult){
     var regex = buildRegex(insult);
-    return regex.test(content); 
+    return regex.test(content);
   });
   return {
     match: matchedInsults.length > 0,

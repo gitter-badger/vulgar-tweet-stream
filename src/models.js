@@ -6,15 +6,15 @@ exports.Tweet = function(tweet, matchedTerms){
   this.username = tweet.user.screen_name;
 
   if(tweet.place || tweet.coordinates)
-    this.tweet_location = { 
+    this.tweet_location = {
       geo: tweet.geo,
       coordinates: tweet.coordinates,
       place: tweet.place
     };
 
-  if (tweet.source && tweet.source != null ) {
+  if (tweet.source && tweet.source !== null ) {
     var sourceDevice = regexp().find("Twitter for (\\w+)").ignoreCase().toRegExp().exec(tweet.source);
-    if (sourceDevice != null) this.source = sourceDevice[2];
+    if (sourceDevice !== null) this.source = sourceDevice[2];
   }
 
   this.getTime = function() { return new Date(tweet.created_at); };
