@@ -14,5 +14,5 @@ exports.parseTweet = function(phrases, tweet){
 };
 
 function buildRegex(term) { 
-  return regexp().find("(" + term + ")(?:[\\b\\ss]|es|ing|in|ed){1}").global().ignoreCase().toRegExp();
+  return regexp().find("\\b(" + term + ")(?:\\b|(?:(?:s|es|ing|in|ed|er)\\b)){1}").global().ignoreCase().toRegExp();
 };
