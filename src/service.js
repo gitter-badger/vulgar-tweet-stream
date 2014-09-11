@@ -60,6 +60,7 @@ function execute (counterModel, rdb, callback){
       processedTweet: function() {
         counterModel.all_time += 1;
         rdb.set(redisAllTimeKey, counterModel.all_time);
+        rdb.publish('update', JSON.stringify({ key:'all_time', value:counterModel['all_time'] }));
       },
       put: function(key){
         if (key)
