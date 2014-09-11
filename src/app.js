@@ -1,4 +1,5 @@
-var timer = require('./timer')(),
+var newrelic = require('newrelic'),
+    timer = require('./timer')(),
     models = require('./models'),
     serviceProvider = require('./service'),
     parser = require('./parser'),
@@ -31,5 +32,6 @@ mongo.connect(config.mongoUrl, function (err, mdb){
         interactionContext.persistTweet(tweetInfo);
       }
     });
+    var webServer = require('./webserver')({ db: mdb, redis: rdb });
   });
 });
