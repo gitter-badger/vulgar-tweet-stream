@@ -16,6 +16,7 @@ exports.serviceApi = function(){ return obj; };
 
 exports.updateMatchesPerSecond = function(){ mps++; };
 exports.updateTweetsPerSecond = function(){ tps++; };
+exports.updateLastMatch = function(tweet){ obj.lastMatch = tweet; };
 
 exports.setDumpCollection = function(collection){ 
   tweetDumpCollection = collection; 

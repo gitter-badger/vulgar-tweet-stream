@@ -1,4 +1,4 @@
-var config = require('../config');
+var config = require('../../config');
 
 module.exports = function(services, app){
 
@@ -7,13 +7,13 @@ module.exports = function(services, app){
   });
 
   var dataExport = require('./dataExport')(services);
-  app.get('/api/export', data.index);
-  app.get('/api/export/json', data.json);
-  app.get('/api/export/csv', data.csv);
-  app.get('/api/export/bigQuery', data.bigQuery);
+  app.get('/api/export', dataExport.index);
+  app.get('/api/export/json', dataExport.json);
+  app.get('/api/export/csv', dataExport.csv);
+  app.get('/api/export/bigQuery', dataExport.bigQuery);
 
   var data = require('./data')(services);
-  app.get('/api/data', data.Index);
+  app.get('/api/data', data.index);
   app.get('/api/data/reset/counter', data.resetCounter);
   app.get('/api/data/reset/dump', data.resetDump);
 

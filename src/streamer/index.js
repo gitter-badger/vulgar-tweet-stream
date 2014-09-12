@@ -9,9 +9,8 @@ var fs = require('fs'),
 
 module.exports.run = function(services){
   var rdb = services.rdb;
-
-  counterCollection = db.collection('counter');
-  tweetDump = db.collection(TWEETDUMP);
+  counterCollection = services.db.collection('counter');
+  tweetDump = services.db.collection(TWEETDUMP);
 
   context.setDumpCollection(tweetDump);
 
@@ -22,12 +21,12 @@ module.exports.run = function(services){
     tweetDumpBatcher = new models.Batcher(256, function(tweets){
       tweetDump.insert(tweets, {w:0}, function(err) { if(err) { console.error(err); throw err; } });
     }),
-    counterBatch = new models.Batcher(64, function(){
+    counterBatcher = new models.Batcher(64, function(){
       counterCollection.save(counterModel, {w:0}, function(err){ if(err) { console.error(err); throw err; } });
     }),
     streamService = new require('./streamService')(counterModel.phrases());
 
-    contextsetCounterModel(counterModel);
+    context.setCounterModel(counterModel);
 
     streamService.onMatch(function(tweetModel, insults){
       insults.forEach(function(term){
@@ -40,7 +39,7 @@ module.exports.run = function(services){
         rdb.incr(key);
 
         rdb.publish('update', JSON.stringify({ key:key, value:counterModel.model[key] }));
-        counterBatch.add(0);
+        counterBatcher.add(0);
       });
 
       counterBatcher.add(0);
@@ -50,7 +49,7 @@ module.exports.run = function(services){
       context.updateLastMatch(tweetModel);
 
       if (insults.length > config.logLevel)
-        console.log('MATCH -', results.insults, 'in', tweetModel.getContent(), tweetModel.getTweetLink());
+        console.log('MATCH -', insults, 'in', tweetModel.getContent(), tweetModel.getTweetLink());
     });
 
     streamService.onProcess(function(tweet){
@@ -68,6 +67,7 @@ module.exports.run = function(services){
 
 
 function initCounter(counterName, callback) {
+  console.info('searching for', counterName);
   counterCollection.findOne({ name: counterName }, function(error, counterModel){
     if (error) throw error;
     console.log('reading in words_dictionary to bootstrap counters..');
@@ -100,7 +100,9 @@ function initCounter(counterName, callback) {
           }
         });
       }
-      var phrases = Object.keys(counterModel.model),
+
+      var phrases = Object.keys(counterModel.model);
+
       counterModel.phrases = function(){ return phrases; };
 
       callback(counterModel);
