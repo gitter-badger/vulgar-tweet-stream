@@ -5,7 +5,7 @@ var config = require('../config'),
 module.exports = function(services){
   var app = express();
 
-  app.set('views', __dirname + '/webserver/views');
+  app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
 
   app.use(bodyParser.urlencoded({ extended: true }));
