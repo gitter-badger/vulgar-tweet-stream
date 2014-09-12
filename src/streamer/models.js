@@ -25,3 +25,18 @@ exports.Tweet = function(tweet, matchedTerms){
     return [this.tweetId,this.username,this.getContent,this.matchedTerms].join(',');
   };
 };
+
+exports.Batcher = function(limit, callback) {
+  var batch = [],
+  batchSize = limit || 96;
+
+  this.flush = function(){
+    callback(batch);
+    batch = [];
+  };
+  this.add = function(item) {
+    batch.push(item);
+    if (batch.length >= batchSize)
+      this.flush();
+  };
+};

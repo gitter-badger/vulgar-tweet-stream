@@ -1,13 +1,7 @@
-var timer = require('./timer')(),
-    models = require('./models'),
-    serviceProvider = require('./service'),
-    parser = require('./parser'),
-    config = require('./config');
+var config = require('./config');
 
-// Twitter Setup
-var Twit = require('twit'),
-    twitter = new Twit(config.twitterConfig),
-    stream = twitter.stream('statuses/filter', {track: 'I,you,me,him,us,they,the,girl,she,he,they', language: 'en'});
+if (config.isProduction)
+  require('newrelic');
 
 // Mongo and Redis setup
 var mongo = require('mongodb').MongoClient,
@@ -16,20 +10,10 @@ var mongo = require('mongodb').MongoClient,
 
 // connnect to mongo and process tweets
 mongo.connect(config.mongoUrl, function (err, mdb){
-  serviceProvider(mdb, rdb, function(interactionContext){
-    //timer.timer(function(tps) { console.log("Tweets Per Second:", tps); });
-    console.log('Starting tweet stream in', config.environment, 'mode...');
-    stream.on('tweet', function(tweet) {
-      var results = parser.parseTweet(interactionContext.counter.phrases(), tweet);
-      interactionContext.counter.processedTweet();
-      //timer.increment();
-      if (results.match) {
-        var tweetInfo = new models.Tweet(tweet, results.insults);
-        if (results.insults.length > config.logLevel)
-          console.log('MATCH -', results.insults, 'in', tweetInfo.getContent(), tweetInfo.getTweetLink());
-        results.insults.forEach(function(term){ interactionContext.counter.put(term); });
-        interactionContext.persistTweet(tweetInfo);
-      }
-    });
-  });
+  console.log('Starting tweet stream in', config.environment, 'mode...');
+
+  var streamer = require('./streamer');
+  streamer.run({ db: mdb, rdb: rdb });
+
+  var webServer = require('./webserver')({ db: mdb, redis: rdb });
 });
