@@ -30,12 +30,13 @@ module.exports.run = function(services){
 
     streamService.onMatch(function(tweetModel, insults){
       insults.forEach(function(term){
+        var key = term;
         if (!config.isProduction)
-          var key = term + "_dev";
+          key = term + "_dev";
 
         // update counter model to new value
-        // add 1 to the existing value
         counterModel.model[key] += 1;
+        // add 1 to the existing value
         rdb.incr(key);
         rdb.publish('update', JSON.stringify({ key:key, value:counterModel.model[key] }));
       });
