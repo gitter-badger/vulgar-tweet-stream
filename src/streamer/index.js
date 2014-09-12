@@ -41,7 +41,6 @@ module.exports.run = function(services){
 
         // update counter model to new value
         counterModel.model[key] += 1;
-        // add 1 to the existing value
         rdb.incr(key);
         rdb.publish('update', JSON.stringify({ key:key, value:counterModel.model[key] }));
       });
@@ -58,9 +57,8 @@ module.exports.run = function(services){
 
     streamService.onProcess(function(tweet){
       context.updateTweetsPerSecond();
-
+      rdb.incr(redisAllTimeKey);
       counterModel.all_time += 1;
-      rdb.set(redisAllTimeKey, counterModel.all_time);
       rdb.publish('update', JSON.stringify({ key:'all_time', value:counterModel['all_time'] }));
     });
 
