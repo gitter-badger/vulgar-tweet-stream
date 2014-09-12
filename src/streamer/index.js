@@ -37,9 +37,7 @@ module.exports.run = function(services){
         // add 1 to the existing value
         counterModel.model[key] += 1;
         rdb.incr(key);
-
         rdb.publish('update', JSON.stringify({ key:key, value:counterModel.model[key] }));
-        counterBatcher.add(0);
       });
 
       counterBatcher.add(0);
