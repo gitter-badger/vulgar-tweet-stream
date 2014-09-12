@@ -5,6 +5,9 @@ module.exports = function(services, app){
   app.get('/', function(req, res){
     res.render('index', config.page_options);
   });
+  app.get('/api/heartbeat', function(req, res){
+    res.json({ 'status' : 'ok' });
+  });
 
   var dataExport = require('./dataExport')(services);
   app.get('/api/export', dataExport.index);
