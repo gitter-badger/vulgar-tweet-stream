@@ -16,6 +16,6 @@ module.exports = {
     access_token: process.env['access_token'],
     access_token_secret: process.env['access_token_secret']
   },
-  port: process.env['port'] || 3000
+  port: process.env['PORT'] || 3000
 };
 
