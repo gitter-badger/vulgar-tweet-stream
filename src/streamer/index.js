@@ -16,6 +16,11 @@ module.exports.run = function(services){
 
   initCounter(counterName, function(counterModel){
 
+    // sync up redis
+    Object.keys(counterModel.model).forEach(function(key){
+      rdb.set(key, counterModel.model[key]);
+    });
+
     var models = require('./models'),
     // create our database batchers
     tweetDumpBatcher = new models.Batcher(256, function(tweets){
