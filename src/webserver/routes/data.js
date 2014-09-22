@@ -6,11 +6,11 @@ module.exports = function(services) {
   };
 
   endpoints.resetCounter = function(req, res){
-    console.info('hitting index');
+    console.info('hitting resetCounter');
   };
 
   endpoints.resetDump = function(req, res){
-    console.info('hitting index');
+    console.info('hitting resetDump');
   };
 
   return endpoints;

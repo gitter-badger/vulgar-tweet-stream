@@ -6,11 +6,11 @@ module.exports = function(services){
   };
 
   endpoints.add = function(req, res){
-    console.info('hitting index');
+    console.info('hitting add');
   };
 
   endpoints.remove = function(req, res){
-    console.info('hitting index');
+    console.info('hitting remove');
   };
 
   return endpoints;
