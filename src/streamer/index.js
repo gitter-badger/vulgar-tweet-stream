@@ -34,6 +34,7 @@ module.exports.run = function(services){
 
     context.setCounterModel(counterModel);
     context.setDumpCollection(tweetDump);
+    context.setWordCollection(wordCollection);
 
     streamService.onMatch(function(tweetModel, insults){
       insults.forEach(function(term){
