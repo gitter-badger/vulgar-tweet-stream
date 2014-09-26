@@ -12,7 +12,6 @@ module.exports.run = function(services){
   tweetDump = services.db.collection(TWEETDUMP);
   wordCollection = services.db.collection(word_list_collection);
 
-
   initCounter(function(counterModel){
 
     // sync up redis
