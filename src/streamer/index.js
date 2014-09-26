@@ -37,10 +37,6 @@ module.exports.run = function(services){
 
     streamService.onMatch(function(tweetModel, insults){
       insults.forEach(function(term){
-				if (!counterModel[term]) {
-					console.info("TRACE", term, "could not be found in countermodel");
-					console.info("TRACE", counterModel);
-				}
         counterModel[term].count += 1;
         counterBatcher.add(counterModel[term]);
 
@@ -78,7 +74,6 @@ function initCounter(callback) {
   // remove counter model concept entirely, replace it with an entire collection of words
   // where each document is { term: string, count: number, enabled: bool }
   // just need to figure out where to save the all time tweet count
-  console.log('reading in words collection to bootstrap counters..');
   wordCollection.find().toArray(function(error, terms){
     if (error) throw error;
     var counterModel = terms.filter(function(item) { return item.enabled; })
@@ -88,7 +83,6 @@ function initCounter(callback) {
                         }, {});
 
     counterModel.phrases = terms.map(function(item) { return item.term; });
-    console.info('loaded counter');
     callback(counterModel);
   });
 };
