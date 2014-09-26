@@ -1,24 +1,23 @@
-var fs = require('fs'),
-    config = require('../config'),
-    counterName = config.isProduction ? 'live_counter' : 'dev_counter,'
+var config = require('../config'),
+    word_list_collection = config.isProduction ? 'live_list' : 'dev_list',
     TWEETDUMP = config.isProduction ? 'tweetdump_live' : 'tweetdump_dev',
     redisAllTimeKey = config.isProduction ? 'all_time' : 'all_time_dev',
     counterCollection = undefined,
     tweetDump = undefined,
+    wordCollection = undefined,
     context = require('./context');
 
 module.exports.run = function(services){
   var rdb = services.rdb;
-  counterCollection = services.db.collection('counter');
   tweetDump = services.db.collection(TWEETDUMP);
+  wordCollection = services.db.collection(word_list_collection);
 
-  context.setDumpCollection(tweetDump);
 
-  initCounter(counterName, function(counterModel){
+  initCounter(function(counterModel){
 
     // sync up redis
-    Object.keys(counterModel.model).forEach(function(key){
-      rdb.set(key, counterModel.model[key]);
+    Object.keys(counterModel).forEach(function(key){
+      rdb.set(key, counterModel[key].count);
     });
 
     var models = require('./models'),
@@ -26,26 +25,29 @@ module.exports.run = function(services){
     tweetDumpBatcher = new models.Batcher(256, function(tweets){
       tweetDump.insert(tweets, {w:0}, function(err) { if(err) { console.error(err); throw err; } });
     }),
-    counterBatcher = new models.Batcher(64, function(){
-      counterCollection.save(counterModel, {w:0}, function(err){ if(err) { console.error(err); throw err; } });
+    counterBatcher = new models.Batcher(128, function(terms){
+      terms.forEach(function(term) {
+        wordCollection.save(term, { w:0 }, function(err){ if(err) { console.error(err); throw err; } });
+      });
     }),
-    streamService = new require('./streamService')(counterModel.phrases());
+    streamService = new require('./streamService')(counterModel.phrases);
 
     context.setCounterModel(counterModel);
+    context.setDumpCollection(tweetDump);
 
     streamService.onMatch(function(tweetModel, insults){
       insults.forEach(function(term){
+        counterModel[term].count += 1;
+        counterBatcher.add(counterModel[term]);
+
         var key = term;
         if (!config.isProduction)
           key = term + "_dev";
-
         // update counter model to new value
-        counterModel.model[key] += 1;
         rdb.incr(key);
-        rdb.publish('update', JSON.stringify({ key:key, value:counterModel.model[key] }));
+        rdb.publish('update', '{"key":' + key + '}');
       });
 
-      counterBatcher.add(0);
       tweetDumpBatcher.add(tweetModel);
 
       context.updateMatchesPerSecond();
@@ -58,8 +60,7 @@ module.exports.run = function(services){
     streamService.onProcess(function(tweet){
       context.updateTweetsPerSecond();
       rdb.incr(redisAllTimeKey);
-      counterModel.all_time += 1;
-      rdb.publish('update', JSON.stringify({ key:'all_time', value:counterModel['all_time'] }));
+      rdb.publish('update', '{"key":"all_time"}');
     });
 
   });
@@ -68,49 +69,22 @@ module.exports.run = function(services){
 };
 
 
-function initCounter(counterName, callback) {
-  console.info('searching for', counterName);
-  counterCollection.findOne({ name: counterName }, function(error, counterModel){
+function initCounter(callback) {
+  // idea
+  // remove counter model concept entirely, replace it with an entire collection of words
+  // where each document is { term: string, count: number, enabled: bool }
+  // just need to figure out where to save the all time tweet count
+  console.log('reading in words collection to bootstrap counters..');
+  wordCollection.find().toArray(function(error, terms){
     if (error) throw error;
-    console.log('reading in words_dictionary to bootstrap counters..');
-    fs.readFile('./src/word_dictionary.txt', 'ascii', function (err, data) {
-      var terms = data.trim().toLowerCase().split('\n');
-      if (!counterModel) {
-        counterModel = {
-          name: counterName,
-          all_time: 0,
-          model: terms.reduce(function(acc, item) {
-            acc[item] = 0;
-            return acc;
-          }, {})
-        };
-      } else if (Object.keys(counterModel.model).length !== terms.length){
+    var counterModel = terms.filter(function(item) { return item.enabled; })
+                        .reduce(function(acc, item){
+                            acc[item.term] = item;
+                            return acc;
+                        });
 
-        /* this check assumes that words are only added and not removed. When
-         * words are removed it will still trigger this process.
-         * i.e. this process will run every time because some words have been
-         * removed from the production db
-        */
-        console.log('new terms found, adding new terms...');
-        var words = Object.keys(counterModel.model);
-        terms.forEach(function (term) {
-          var wordExists = words.some(function (word) {
-            return word === term;
-          });
-          if (!wordExists) {
-            counterModel.model[term] = 0;
-          }
-        });
-      }
-
-      var phrases = Object.keys(counterModel.model);
-
-      counterModel.phrases = function(){ return phrases; };
-
-      callback(counterModel);
-    });
+    counterModel.phrases = terms.map(function(item) { return item.term; });
+    console.info('loaded counter');
+    callback(counterModel);
   });
 };
-
-
-
