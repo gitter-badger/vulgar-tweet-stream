@@ -37,6 +37,10 @@ module.exports.run = function(services){
 
     streamService.onMatch(function(tweetModel, insults){
       insults.forEach(function(term){
+				if (!counterModel[term]) {
+					console.info("TRACE", term, "could not be found in countermodel");
+					console.info("TRACE", counterModel);
+				}
         counterModel[term].count += 1;
         counterBatcher.add(counterModel[term]);
 
@@ -81,7 +85,7 @@ function initCounter(callback) {
                         .reduce(function(acc, item){
                             acc[item.term] = item;
                             return acc;
-                        });
+                        }, {});
 
     counterModel.phrases = terms.map(function(item) { return item.term; });
     console.info('loaded counter');
