@@ -6,6 +6,7 @@ exports.parseTweet = function(phrases, tweet){
     var regex = buildRegex(insult);
     return regex.test(content);
   });
+
   return {
     match: matchedInsults.length > 0,
     insults: matchedInsults,
