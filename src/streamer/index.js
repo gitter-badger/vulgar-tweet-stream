@@ -46,7 +46,7 @@ module.exports.run = function(services){
           key = term + "_dev";
         // update counter model to new value
         rdb.incr(key);
-        rdb.publish('update', '{"key":' + key + '}');
+        rdb.publish('update', '{"key":"' + key + '"}');
       });
 
       tweetDumpBatcher.add(tweetModel);
@@ -61,7 +61,7 @@ module.exports.run = function(services){
     streamService.onProcess(function(tweet){
       context.updateTweetsPerSecond();
       rdb.incr(redisAllTimeKey);
-      rdb.publish('update', '{"key":"all_time"}');
+      rdb.publish('update', '{"key" : "all_time"}');
     });
 
   });
