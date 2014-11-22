@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "streams vulgar tweets to a dashboard, showing the most often used fowl mouthed phrases",
   "scripts" : {
+    "dev" : "foreman start -f localproc",
     "postinstall" : "node node_modules/mimosa/bin/mimosa build -om",
     "start" : "node src/app.js"
   },

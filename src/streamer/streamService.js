@@ -1,7 +1,7 @@
 var config = require('../config'),
     Twit = require('twit'),
-    twitter = new Twit(config.twitterConfig),
-    Tweet = require('./models').Tweet;
+    Tweet = require('./models').Tweet,
+    twitter = new Twit(config.twitterConfig);
 
 module.exports = function(phrases){
   var parser = require('./parser'),
@@ -10,19 +10,21 @@ module.exports = function(phrases){
   invokeOnProcess = function (tweet){
     onProcessCallbacks.forEach(function(item){ item(tweet); });
   },
-  invokeOnMatch = function (tweet, terms){
-    onMatchCallbacks.forEach(function(item){ item(tweet, terms); });
+  invokeOnMatch = function (tweet){
+    onMatchCallbacks.forEach(function(item){ item(tweet); });
   },
   stream = twitter.stream('statuses/filter', {track: 'I,you,me,him,us,they,the,girl,she,he,they', language: 'en'});
 
   console.info('starting stream');
+  var count = 0;
   stream.on('tweet', function(tweet) {
+    console.log(count++);
     var result = parser.parseTweet(phrases, tweet);
     invokeOnProcess(tweet);
 
-    if (result.match){
+    if (result.match) {
       var tweetModel = new Tweet(tweet, result.insults);
-      invokeOnMatch(tweetModel, result.insults);
+      invokeOnMatch(tweetModel);
     }
   });
 

@@ -8,7 +8,8 @@ var mongo = require('mongodb').MongoClient,
     redis = require('then-redis'),
     rdb = redis.createClient(config.redisUrl);
 
-// connnect to mongo and process tweets
+// connnect to mongo and process tweetsc
+console.info(config.mongoUrl);
 mongo.connect(config.mongoUrl, function (err, mdb){
   console.log('Starting tweet stream in', config.environment, 'mode...');
 

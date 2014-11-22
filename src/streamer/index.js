@@ -16,16 +16,21 @@ module.exports.run = function(services){
   }),
   counterBatcher = new models.Batcher(128, function(terms){
     terms.forEach(function(term) {
-      wordCollection.save(term, { w:0 }, function(err){ if(err) { console.error(err); throw err; } });
+      wordCollection.save(term, { w:0 }, function(err) {
+        if(err) { 
+          console.error(err); 
+          throw err; 
+        } 
+      });
     });
   });
 
-  initCounter(wordCollection, { metrics: streamerMetricCollector, 
+  initCounter(wordCollection, { 
+                metrics: streamerMetricCollector, 
                 redis: services.rdb,
                 saveTweet: function(tweet){ tweetDumpBatcher.add(tweet); },
-                saveCount: function(counter) { counterBatcher.add(counter); },
-                }, app);
-
+                saveCount: function(counter) { counterBatcher.add(counter); }
+              }, app);
   return streamerMetricCollector.serviceApi(wordCollection, tweetDump, services);
 };
 
@@ -48,8 +53,11 @@ function app(services, counterModel){
   // sync up redis
   Object.keys(counterModel).forEach(function(key){ redis.set(key, counterModel[key].count); });
 
+
   // runs on every tweet match
-  streamService.onMatch(function(tweetModel, insults){
+  streamService.onMatch(function(tweetModel){
+    var insults = tweetModel.matchedTerms;
+
     insults.forEach(function(term){
       counterModel[term].count += 1;
       services.saveCount(counterModel[term]);
